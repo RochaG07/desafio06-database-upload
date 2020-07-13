@@ -12,6 +12,7 @@ interface Request{
   category: string,
 }
 
+
 class CreateTransactionService {
   public async execute({ title, value, type, category }: Request): Promise<Transaction> {
     const transactionRepository = getCustomRepository(TransactionRepository);
@@ -20,6 +21,7 @@ class CreateTransactionService {
     if(type != 'income' && type != 'outcome'){
       throw new AppError('invalid transaction type.', 401);
     }
+
 
     // should not be able to create outcome transaction without a valid balance
     if(type == 'outcome'){
@@ -30,15 +32,17 @@ class CreateTransactionService {
       }
     }
 
+
     //Cria uma nova categoria se não existir
     const categoryRepository = getRepository(Category);
 
     const categoryExists = await categoryRepository.findOne({where: {title: category}});
 
     //Transforma category em category_id
-    let category_id;
+    
+    let TransactionCategory;
     if(categoryExists){
-      category_id = categoryExists.id;
+      TransactionCategory = categoryExists;
     } else {
       //Cria uma nova categoria caso não exista no banco
       const createdCategory = categoryRepository.create({
@@ -47,16 +51,17 @@ class CreateTransactionService {
 
       await categoryRepository.save(createdCategory);
 
-      category_id = createdCategory.id;
+      TransactionCategory = createdCategory;
     }
+    
 
 
-
+    
     const transaction = transactionRepository.create({
       title,
       value,
       type,
-      category_id
+      category: TransactionCategory,
     });
 
     await transactionRepository.save(transaction);

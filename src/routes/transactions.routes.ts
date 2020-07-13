@@ -14,6 +14,7 @@ import multer from 'multer';
 const tempFolder = path.resolve(__dirname, '..', '..', 'tmp');
 const upload = multer({ dest: tempFolder });
 
+
 const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
@@ -50,17 +51,15 @@ transactionsRouter.delete('/:id', async (request, response) => {
   return response.status(204).json();
 });
 
-
-transactionsRouter.post('/import', upload.single('csvFile'), async (request, response) => {
+transactionsRouter.post('/import', upload.single('file'), async (request, response) => {
 
   const importTransactionsService = new ImportTransactionsService();
 
-  const transactions = await importTransactionsService.execute(request.file.filename);
+  const filePath = tempFolder +'/'+ request.file.filename;
+
+  const transactions = await importTransactionsService.execute(filePath);
 
   return response.json(transactions); 
 });
-
-
-
 
 export default transactionsRouter;
